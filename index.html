@@ -18,6 +18,7 @@
             background: #fff5f6;
             color: #4a1c24;
             overflow-x: hidden;
+            user-select: none; /* Prevents text selection during rapid clicking */
         }
 
         .font-cursive { font-family: 'Dancing+Script', cursive; }
@@ -26,13 +27,13 @@
         /* Smooth Scroll */
         html { scroll-behavior: smooth; }
 
-        /* Floating Hearts Animation */
-        .heart {
+        /* Floating Background Hearts */
+        .heart-bg {
             position: fixed;
             font-size: 20px;
             pointer-events: none;
             z-index: 0;
-            opacity: 0.6;
+            opacity: 0.4;
             animation: float 10s linear infinite;
         }
 
@@ -75,6 +76,21 @@
             transition: all 0.3s ease;
         }
 
+        /* Interactive Click Heart - Updated for better visibility */
+        .click-heart {
+            position: absolute;
+            pointer-events: none;
+            z-index: 9999;
+            filter: drop-shadow(0 0 5px rgba(255,77,109,0.5));
+            animation: burst 1s ease-out forwards;
+        }
+
+        @keyframes burst {
+            0% { transform: translate(-50%, -50%) scale(0.3) rotate(0deg); opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: translate(-50%, -200%) scale(1.8) rotate(20deg); opacity: 0; }
+        }
+
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #fff0f3; }
@@ -83,7 +99,7 @@
 </head>
 <body>
 
-    <!-- Floating Background Elements -->
+    <!-- Container for background hearts -->
     <div id="hearts-container"></div>
 
     <!-- Hero Section -->
@@ -182,14 +198,14 @@
     </footer>
 
     <script>
-        // Create floating hearts
-        function createHeart() {
+        // 1. Background floating hearts
+        function createBackgroundHeart() {
             const heart = document.createElement('div');
-            heart.classList.add('heart');
+            heart.classList.add('heart-bg');
             heart.innerHTML = ['❤️', '💖', '💗', '💓', '🌸'][Math.floor(Math.random() * 5)];
             heart.style.left = Math.random() * 100 + 'vw';
             heart.style.animationDuration = Math.random() * 5 + 5 + 's';
-            heart.style.opacity = Math.random();
+            heart.style.opacity = Math.random() * 0.5;
             document.getElementById('hearts-container').appendChild(heart);
 
             setTimeout(() => {
@@ -197,7 +213,37 @@
             }, 10000);
         }
 
-        setInterval(createHeart, 300);
+        setInterval(createBackgroundHeart, 400);
+
+        // 2. Interactive "Touch/Click" Hearts - Increased sizes here
+        function spawnInteractionHeart(x, y) {
+            const heart = document.createElement('div');
+            heart.classList.add('click-heart');
+            heart.innerHTML = ['❤️', '💖', '💗', '✨', '🌹'][Math.floor(Math.random() * 5)];
+            heart.style.left = x + 'px';
+            heart.style.top = y + 'px';
+            // Increased range from 20-30px to 45-65px
+            heart.style.fontSize = (Math.random() * 20 + 45) + 'px'; 
+            
+            document.body.appendChild(heart);
+
+            // Remove after animation finishes
+            setTimeout(() => {
+                heart.remove();
+            }, 1000);
+        }
+
+        // Handle Mouse Clicks
+        document.addEventListener('mousedown', (e) => {
+            spawnInteractionHeart(e.pageX, e.pageY);
+        });
+
+        // Handle Mobile Touches
+        document.addEventListener('touchstart', (e) => {
+            Array.from(e.touches).forEach(touch => {
+                spawnInteractionHeart(touch.pageX, touch.pageY);
+            });
+        }, { passive: true });
 
         // Envelope Animation
         function toggleEnvelope(wrapper) {
