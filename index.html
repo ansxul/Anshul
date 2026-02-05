@@ -18,13 +18,12 @@
             background: #fff5f6;
             color: #4a1c24;
             overflow-x: hidden;
-            user-select: none; /* Prevents text selection during rapid clicking */
+            user-select: none;
         }
 
-        .font-cursive { font-family: 'Dancing+Script', cursive; }
+        .font-cursive { font-family: 'Dancing Script', cursive; }
         .font-serif { font-family: 'Playfair Display', serif; }
 
-        /* Smooth Scroll */
         html { scroll-behavior: smooth; }
 
         /* Floating Background Hearts */
@@ -50,7 +49,6 @@
             border-radius: 20px;
         }
 
-        /* Hero Section Gradient */
         .hero-bg {
             background: linear-gradient(135deg, #ff758f 0%, #ff4d6d 100%);
         }
@@ -76,7 +74,7 @@
             transition: all 0.3s ease;
         }
 
-        /* Interactive Click Heart - Updated for better visibility */
+        /* Interactive Click Heart */
         .click-heart {
             position: absolute;
             pointer-events: none;
@@ -91,7 +89,13 @@
             100% { transform: translate(-50%, -200%) scale(1.8) rotate(20deg); opacity: 0; }
         }
 
-        /* Custom scrollbar */
+        /* Moving Button Fix */
+        #noBtn {
+            transition: all 0.2s ease;
+            z-index: 50;
+            position: absolute;
+        }
+
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #fff0f3; }
         ::-webkit-scrollbar-thumb { background: #ff758f; border-radius: 10px; }
@@ -99,7 +103,6 @@
 </head>
 <body>
 
-    <!-- Container for background hearts -->
     <div id="hearts-container"></div>
 
     <!-- Hero Section -->
@@ -157,7 +160,6 @@
             
             <div class="envelope-wrapper" onclick="toggleEnvelope(this)">
                 <div class="envelope relative w-full h-80 md:h-96">
-                    <!-- Back of Envelope -->
                     <div class="absolute inset-0 bg-pink-200 rounded-lg shadow-lg flex items-center justify-center">
                         <div class="text-pink-400">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,8 +168,6 @@
                             <p class="mt-4 font-semibold">Click to Open</p>
                         </div>
                     </div>
-                    
-                    <!-- The Letter (Inside) -->
                     <div class="absolute inset-0 bg-white rounded-lg shadow-2xl p-8 text-left flex flex-col justify-center transform scale-x-[-1]" style="backface-visibility: hidden; transform: rotateY(180deg);">
                         <h3 class="font-cursive text-3xl text-pink-500 mb-4">Dearest [Her Name],</h3>
                         <p class="text-gray-700 leading-relaxed mb-4">
@@ -187,6 +187,29 @@
         </div>
     </section>
 
+    <!-- Question Section -->
+    <section id="proposal" class="text-center py-20 min-h-[70vh] flex flex-col items-center justify-center relative bg-white overflow-hidden">
+        <h2 class="font-cursive text-5xl md:text-7xl text-rose-600 mb-12">Will you be my Valentine?</h2>
+        
+        <div id="btn-container" class="flex flex-col md:flex-row gap-8 items-center justify-center relative w-full h-48">
+            <button id="yesBtn" onclick="acceptValentine()" class="px-12 py-4 bg-rose-500 text-white rounded-full font-bold text-xl shadow-lg hover:bg-rose-600 hover:scale-110 transition-all transform z-10">
+                YES! 💖
+            </button>
+            
+            <button id="noBtn" onmouseover="moveButton()" onclick="moveButton()" class="px-12 py-4 bg-slate-200 text-slate-500 rounded-full font-bold text-xl hover:bg-slate-300 transition-all absolute">
+                No 🙈
+            </button>
+        </div>
+
+        <div id="success-msg" class="hidden mt-12 transform transition-all duration-500 opacity-0 scale-95">
+            <div class="glass p-10 shadow-2xl inline-block border-2 border-rose-100">
+                <p class="text-4xl font-cursive text-rose-600 mb-4">Yay! It's a date! 🥂</p>
+                <p class="text-slate-500 text-xl">I promise to make it the most magical day ever.</p>
+                <div class="mt-6 text-3xl">💝🌹💍</div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="py-12 bg-white text-center border-t border-pink-100">
         <div class="flex justify-center space-x-4 mb-4">
@@ -198,7 +221,7 @@
     </footer>
 
     <script>
-        // 1. Background floating hearts
+        // Background floating hearts
         function createBackgroundHeart() {
             const heart = document.createElement('div');
             heart.classList.add('heart-bg');
@@ -207,55 +230,75 @@
             heart.style.animationDuration = Math.random() * 5 + 5 + 's';
             heart.style.opacity = Math.random() * 0.5;
             document.getElementById('hearts-container').appendChild(heart);
-
-            setTimeout(() => {
-                heart.remove();
-            }, 10000);
+            setTimeout(() => heart.remove(), 10000);
         }
-
         setInterval(createBackgroundHeart, 400);
 
-        // 2. Interactive "Touch/Click" Hearts - Increased sizes here
+        // Interactive "Touch/Click" Hearts
         function spawnInteractionHeart(x, y) {
             const heart = document.createElement('div');
             heart.classList.add('click-heart');
             heart.innerHTML = ['❤️', '💖', '💗', '✨', '🌹'][Math.floor(Math.random() * 5)];
             heart.style.left = x + 'px';
             heart.style.top = y + 'px';
-            // Increased range from 20-30px to 45-65px
             heart.style.fontSize = (Math.random() * 20 + 45) + 'px'; 
-            
             document.body.appendChild(heart);
-
-            // Remove after animation finishes
-            setTimeout(() => {
-                heart.remove();
-            }, 1000);
+            setTimeout(() => heart.remove(), 1000);
         }
 
-        // Handle Mouse Clicks
-        document.addEventListener('mousedown', (e) => {
-            spawnInteractionHeart(e.pageX, e.pageY);
-        });
-
-        // Handle Mobile Touches
+        document.addEventListener('mousedown', (e) => spawnInteractionHeart(e.pageX, e.pageY));
         document.addEventListener('touchstart', (e) => {
-            Array.from(e.touches).forEach(touch => {
-                spawnInteractionHeart(touch.pageX, touch.pageY);
-            });
+            Array.from(e.touches).forEach(touch => spawnInteractionHeart(touch.pageX, touch.pageY));
         }, { passive: true });
 
         // Envelope Animation
         function toggleEnvelope(wrapper) {
-            const envelope = wrapper.querySelector('.envelope');
-            envelope.classList.toggle('open');
+            wrapper.querySelector('.envelope').classList.toggle('open');
         }
 
-        // Simple Fade In Animation on Scroll
-        const observerOptions = {
-            threshold: 0.1
-        };
+        // --- FIXED LOGIC FOR PROPOSAL ---
+        
+        function moveButton() {
+            const btn = document.getElementById('noBtn');
+            const container = document.getElementById('proposal');
+            if (!btn || !container) return;
+            
+            const padding = 50;
+            const maxWidth = container.clientWidth - btn.clientWidth - padding;
+            const maxHeight = container.clientHeight - btn.clientHeight - padding;
+            
+            // Generate random position within the container bounds
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxWidth));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxHeight));
+            
+            btn.style.left = randomX + 'px';
+            btn.style.top = randomY + 'px';
+        }
 
+        function acceptValentine() {
+            const btnContainer = document.getElementById('btn-container');
+            const successMsg = document.getElementById('success-msg');
+            
+            if (btnContainer) btnContainer.classList.add('hidden');
+            if (successMsg) {
+                successMsg.classList.remove('hidden');
+                setTimeout(() => {
+                    successMsg.classList.add('opacity-100', 'scale-100');
+                }, 50);
+            }
+
+            // Explosion of hearts
+            for(let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    spawnInteractionHeart(
+                        Math.random() * window.innerWidth,
+                        Math.random() * window.innerHeight + window.scrollY
+                    );
+                }, i * 50);
+            }
+        }
+
+        // Scroll Observer
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -263,7 +306,7 @@
                     entry.target.classList.remove('opacity-0', 'translate-y-10');
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.1 });
 
         document.querySelectorAll('.memory-card').forEach(card => {
             card.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
