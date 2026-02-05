@@ -96,35 +96,6 @@
             white-space: nowrap;
         }
 
-        /* Music Button Styling */
-        .music-control {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            z-index: 1000;
-            background: white;
-            border: 2px solid #ff4d6d;
-            border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3);
-            touch-action: manipulation;
-        }
-
-        .music-control.playing {
-            animation: pulse-music 2s infinite;
-        }
-
-        @keyframes pulse-music {
-            0% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 77, 109, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0); }
-        }
-
         .memory-card {
             transition: all 0.5s ease;
         }
@@ -149,11 +120,6 @@
         <source src="Tu Hi Hai Aashiqui - Arijit Singh _ Palak Muchhal _ Hindi.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- Music Toggle Button -->
-    <button class="music-control" id="musicToggle" onclick="toggleMusic(event)">
-        <span id="musicIcon" style="font-size: 24px;">🔇</span>
-    </button>
-
     <!-- Hero Section -->
     <section class="relative min-h-screen flex items-center justify-center text-white hero-bg overflow-hidden p-6">
         <div class="absolute inset-0 opacity-20">
@@ -165,7 +131,7 @@
         <div class="relative z-10 text-center space-y-6">
             <h2 class="text-xl md:text-3xl font-light tracking-widest uppercase animate-pulse">Happy Valentine's Day</h2>
             <h1 class="text-5xl md:text-8xl font-cursive mb-4 drop-shadow-lg">My One & Only</h1>
-            <p class="text-base md:text-xl font-light max-sm md:max-w-lg mx-auto italic opacity-90 px-4">
+            <p class="text-base md:text-xl font-light max-w-sm md:max-w-lg mx-auto italic opacity-90 px-4">
                 "Every love story is beautiful, but ours is my favorite."
             </p>
             <div class="pt-8">
@@ -286,66 +252,25 @@
         }
         setInterval(createBackgroundHeart, 500);
 
-        // 2. Music logic optimized for mobile and Promise handling
+        // 2. Music logic - Background only, no manual buttons
         const music = document.getElementById('bgMusic');
-        const musicIcon = document.getElementById('musicIcon');
-        const musicToggle = document.getElementById('musicToggle');
-        
-        // Set volume to 60%
         if (music) music.volume = 0.6;
 
         let isMusicStarted = false;
-        let playPromise = null;
 
-        function toggleMusic(event) {
-            if (!music) return;
-            if (event) event.stopPropagation();
-
-            if (music.paused) {
-                playPromise = music.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        musicIcon.innerText = "🔊";
-                        musicToggle.classList.add('playing');
-                    }).catch((err) => {
-                        console.log("Playback failed:", err);
-                    });
-                }
-            } else {
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        music.pause();
-                        musicIcon.innerText = "🔇";
-                        musicToggle.classList.remove('playing');
-                    }).catch(() => {
-                        music.pause();
-                        musicIcon.innerText = "🔇";
-                        musicToggle.classList.remove('playing');
-                    });
-                } else {
-                    music.pause();
-                    musicIcon.innerText = "🔇";
-                    musicToggle.classList.remove('playing');
-                }
+        function startMusic() {
+            if (music && !isMusicStarted) {
+                music.play().then(() => {
+                    isMusicStarted = true;
+                }).catch(() => {
+                    // Browsers require a gesture, so we'll try again on the next interaction
+                });
             }
-            isMusicStarted = true;
         }
 
-        // Start music on first interaction
-        document.body.addEventListener('click', (e) => {
-            if (e.target.closest('#musicToggle')) return;
-
-            if (music && !isMusicStarted) {
-                playPromise = music.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        musicIcon.innerText = "🔊";
-                        musicToggle.classList.add('playing');
-                        isMusicStarted = true;
-                    }).catch(() => {});
-                }
-            }
-        }, { once: true });
+        // Start music on first interaction (standard for modern browsers)
+        document.body.addEventListener('click', startMusic, { once: true });
+        document.body.addEventListener('touchstart', startMusic, { once: true });
 
         // 3. Large Interactive Hearts (Mobile Optimized)
         function spawnInteractionHeart(x, y) {
@@ -360,12 +285,12 @@
         }
 
         document.addEventListener('mousedown', (e) => {
-            if (e.target.closest('#musicToggle') || e.target.closest('button')) return;
+            if (e.target.closest('button')) return;
             spawnInteractionHeart(e.pageX, e.pageY);
         });
 
         document.addEventListener('touchstart', (e) => {
-            if (e.target.closest('#musicToggle') || e.target.closest('button')) return;
+            if (e.target.closest('button')) return;
             Array.from(e.touches).forEach(touch => {
                 spawnInteractionHeart(touch.pageX, touch.pageY);
             });
