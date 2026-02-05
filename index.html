@@ -165,7 +165,7 @@
         <div class="relative z-10 text-center space-y-6">
             <h2 class="text-xl md:text-3xl font-light tracking-widest uppercase animate-pulse">Happy Valentine's Day</h2>
             <h1 class="text-5xl md:text-8xl font-cursive mb-4 drop-shadow-lg">My One & Only</h1>
-            <p class="text-base md:text-xl font-light max-w-sm md:max-w-lg mx-auto italic opacity-90 px-4">
+            <p class="text-base md:text-xl font-light max-sm md:max-w-lg mx-auto italic opacity-90 px-4">
                 "Every love story is beautiful, but ours is my favorite."
             </p>
             <div class="pt-8">
@@ -290,6 +290,10 @@
         const music = document.getElementById('bgMusic');
         const musicIcon = document.getElementById('musicIcon');
         const musicToggle = document.getElementById('musicToggle');
+        
+        // Set volume to 60%
+        if (music) music.volume = 0.6;
+
         let isMusicStarted = false;
         let playPromise = null;
 
