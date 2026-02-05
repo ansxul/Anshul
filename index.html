@@ -100,7 +100,7 @@
         .music-control {
             position: fixed;
             bottom: 25px;
-            right: 25px; /* Moved to right for better thumb access on mobile */
+            right: 25px;
             z-index: 1000;
             background: white;
             border: 2px solid #ff4d6d;
@@ -113,6 +113,16 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3);
             touch-action: manipulation;
+        }
+
+        .music-control.playing {
+            animation: pulse-music 2s infinite;
+        }
+
+        @keyframes pulse-music {
+            0% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 77, 109, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0); }
         }
 
         .memory-card {
@@ -134,8 +144,10 @@
 
     <div id="hearts-container"></div>
 
-    <!-- Audio Element -->
-    <audio id="bgMusic" loop src="Deewaana Deewaana-2-Downringtone.com.mp3"></audio>
+    <!-- Audio Element linked to the specific song -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="Tu Hi Hai Aashiqui - Arijit Singh _ Palak Muchhal _ Hindi.mp3" type="audio/mpeg">
+    </audio>
 
     <!-- Music Toggle Button -->
     <button class="music-control" id="musicToggle" onclick="toggleMusic(event)">
@@ -274,32 +286,60 @@
         }
         setInterval(createBackgroundHeart, 500);
 
-        // 2. Music logic optimized for mobile auto-play restrictions
+        // 2. Music logic optimized for mobile and Promise handling
         const music = document.getElementById('bgMusic');
         const musicIcon = document.getElementById('musicIcon');
+        const musicToggle = document.getElementById('musicToggle');
         let isMusicStarted = false;
+        let playPromise = null;
 
         function toggleMusic(event) {
             if (!music) return;
             if (event) event.stopPropagation();
 
             if (music.paused) {
-                music.play().catch(() => {});
-                musicIcon.innerText = "🔊";
+                playPromise = music.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        musicIcon.innerText = "🔊";
+                        musicToggle.classList.add('playing');
+                    }).catch((err) => {
+                        console.log("Playback failed:", err);
+                    });
+                }
             } else {
-                music.pause();
-                musicIcon.innerText = "🔇";
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        music.pause();
+                        musicIcon.innerText = "🔇";
+                        musicToggle.classList.remove('playing');
+                    }).catch(() => {
+                        music.pause();
+                        musicIcon.innerText = "🔇";
+                        musicToggle.classList.remove('playing');
+                    });
+                } else {
+                    music.pause();
+                    musicIcon.innerText = "🔇";
+                    musicToggle.classList.remove('playing');
+                }
             }
             isMusicStarted = true;
         }
 
-        // Mobile browsers need a user interaction to play audio
-        document.body.addEventListener('click', () => {
+        // Start music on first interaction
+        document.body.addEventListener('click', (e) => {
+            if (e.target.closest('#musicToggle')) return;
+
             if (music && !isMusicStarted) {
-                music.play().then(() => {
-                    musicIcon.innerText = "🔊";
-                    isMusicStarted = true;
-                }).catch(() => {});
+                playPromise = music.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        musicIcon.innerText = "🔊";
+                        musicToggle.classList.add('playing');
+                        isMusicStarted = true;
+                    }).catch(() => {});
+                }
             }
         }, { once: true });
 
@@ -310,19 +350,16 @@
             heart.innerHTML = ['❤️', '💖', '💗', '✨', '🌹'][Math.floor(Math.random() * 5)];
             heart.style.left = x + 'px';
             heart.style.top = y + 'px';
-            // Large size for visibility on small screens
             heart.style.fontSize = (Math.random() * 20 + 50) + 'px'; 
             document.body.appendChild(heart);
             setTimeout(() => heart.remove(), 1000);
         }
 
-        // Standard desktop click
         document.addEventListener('mousedown', (e) => {
             if (e.target.closest('#musicToggle') || e.target.closest('button')) return;
             spawnInteractionHeart(e.pageX, e.pageY);
         });
 
-        // Mobile touch
         document.addEventListener('touchstart', (e) => {
             if (e.target.closest('#musicToggle') || e.target.closest('button')) return;
             Array.from(e.touches).forEach(touch => {
@@ -336,13 +373,12 @@
             if(env) env.classList.toggle('open');
         }
 
-        // 5. Dodging "No" Button (Mobile Safe Logic)
+        // 5. Dodging "No" Button
         function moveButton() {
             const btn = document.getElementById('noBtn');
             const container = document.getElementById('proposal');
             if (!btn || !container) return;
             
-            // Set a safe area so it doesn't leave the screen or hide behind success text
             const rect = container.getBoundingClientRect();
             const btnRect = btn.getBoundingClientRect();
             
@@ -357,12 +393,10 @@
             btn.style.top = randomY + 'px';
         }
 
-        // Initialize "No" button position so it's next to "Yes" on load
         window.onload = () => {
             const btn = document.getElementById('noBtn');
             const yesBtn = document.getElementById('yesBtn');
             if(btn && yesBtn) {
-                // Center slightly below or to the side of Yes button initially
                 btn.style.left = (yesBtn.offsetLeft + 120) + 'px';
                 btn.style.top = yesBtn.offsetTop + 'px';
             }
@@ -377,12 +411,10 @@
                 successMsg.classList.remove('hidden');
                 setTimeout(() => {
                     successMsg.classList.add('opacity-100', 'scale-100');
-                    // Scroll to see the message if needed
                     successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 50);
             }
 
-            // Explosion effect
             for(let i = 0; i < 35; i++) {
                 setTimeout(() => {
                     spawnInteractionHeart(
@@ -393,7 +425,6 @@
             }
         }
 
-        // Scroll animations
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
